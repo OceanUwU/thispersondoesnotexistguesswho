@@ -1,6 +1,5 @@
 const socket = io('');
 
-const url = article => `https://en.wikipedia.org/?curid=${article.id}`;
 const rows = 4;
 const columns = 5;
 
@@ -9,7 +8,7 @@ var gameInfo = null;
 
 switch (queryParams.intent) {
     case 'create':
-        socket.emit('create');
+        socket.emit('create', Number(queryParams.type));
         break;
         
     case 'join':
@@ -25,9 +24,18 @@ socket.on('wait', code => {
     $('#roomCode').text(code);
 });
 
-socket.on('loading', () => {
+$('#toLoad').text(rows * columns);
+socket.on('loading', (state, image, name) => {
     $('#wait').addClass('d-none');
     $('#load').removeClass('d-none');
+    $('#loading').text(state);
+    
+    $('#newlyGenerated')[`${image == null ? 'add' : 'remove'}Class`]('d-none');
+    if (image != null)
+        $('#newlyGenerated').attr('src', image);
+    $('#newName')[`${name == null ? 'add' : 'remove'}Class`]('d-none');
+    if (image != null)
+        $('#newName').text(name);
 });
 
 socket.on('start', info => {
@@ -39,29 +47,21 @@ socket.on('start', info => {
     $('#code').text(gameInfo.code);
 
     toggleArticle();
-    let link = $('#myArticle').find('a');
-    let article = gameInfo.articles[gameInfo.article];
-    link.text(article.title);
-    link.attr('href', url(article));
+    $('#myArticle').find('span').text(gameInfo.names[gameInfo.myImage]);
 
     for (let i = 0; i < rows; i++) {
         let row = $('<tr>');
         for (let j = 0; j < columns; j++) {
             let pos = columns * i + j;
-            let article = gameInfo.articles[pos];
 
             let cell = $('<td>');
             cell.attr('id', `own${pos}`);
             cell.click(() => socket.emit('flip', pos));
             let div = $('<div>');
-            let link = $('<a>');
-            link.attr('target', '_blank');
-            link.attr('href', url(article));
-            link.click(e => e.stopPropagation()) //stop clicking link from flipping tile
-            link.text(article.title);
-
-            div.append(link);
-            cell.append(div)
+            div.append($(`<img src="${gameInfo.imgPath}${pos}.jpg" title="<img src='${gameInfo.imgPath}${pos}.jpg'>">`));
+            div.find('img').tooltip({ html: true, delay: {show: 1000} });
+            div.append($(`<span>${gameInfo.names[pos]}</span>`));
+            cell.append(div);
             row.append(cell);
         }
         $('#ownBoard').append(row);
@@ -71,17 +71,12 @@ socket.on('start', info => {
         let row = $('<tr>');
         for (let j = 0; j < columns; j++) {
             let pos = columns * i + j;
-            let article = gameInfo.articles[pos]
 
             let cell = $('<td>');
             cell.attr('id', `opponent${pos}`);
             let div = $('<div>');
-            let link = $('<a>');
-            link.attr('target', '_blank');
-            link.attr('href', url(article));
-            link.text(article.title[0]);
-
-            div.append(link);
+            div.append($(`<img src="${gameInfo.imgPath}${pos}.jpg" title="<img src='${gameInfo.imgPath}${pos}.jpg'>">`));
+            div.find('img').tooltip({ html: true, delay: {show: 1000} });
             cell.append(div);
             row.append(cell);
         }

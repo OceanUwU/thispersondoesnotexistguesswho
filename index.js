@@ -1,12 +1,18 @@
 const express = require('express');
 const Game = require('./game');
 const http = require('http');
+const fs = require('fs');
 var app = express();
 var server = http.createServer(app);
 const cfg = require('./cfg.json');
 var io = new (require('socket.io').Server)(server);
 const codeLength = 4;
 const codeChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const types = [0,3];
+
+//clear old images
+fs.rmSync('./public/people', { recursive: true, force: true });
+fs.mkdirSync('./public/people');
 
 app.use(express.static('public'));
 
@@ -15,8 +21,8 @@ server.listen(cfg.port, () => {
 });
 
 io.on('connection', socket => {
-    socket.on('create', () => {
-        if (!socket.game) {
+    socket.on('create', type => {
+        if (!socket.game && Number.isInteger(type) && type >= types[0] && type <= types[1]) {
             let code;
             do {
                 code = '';
@@ -24,13 +30,14 @@ io.on('connection', socket => {
                     code += codeChars[Math.floor(Math.random() * codeChars.length)];
             } while (games.hasOwnProperty(code))
             
-            let game = new Game(code);
+            let game = new Game(code, type);
             games[code] = game;
     
             game.join(socket);
 
             //delete the game in like 4 hours lol
             setTimeout(() => {
+                fs.rmSync(game.localImgPath, { recursive: true, force: true });
                 delete games[code];
                 for (let i of game.connected)
                     i.disconnect();

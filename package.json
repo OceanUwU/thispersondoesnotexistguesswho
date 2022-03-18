@@ -1,7 +1,7 @@
 {
-  "name": "wikilimination",
+  "name": "thispersondoesnotexistguesswho",
   "version": "1.0.0",
-  "description": "guess who with random wikipedia articles",
+  "description": "guess who with ai generated images",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

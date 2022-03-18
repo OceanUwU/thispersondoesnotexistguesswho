@@ -7,7 +7,7 @@
         <link href="/static/css/index.css" rel="stylesheet">
         <link href="/static/css/play.css" rel="stylesheet">
         <link rel="icon" href="/static/img/icon.png">
-        <title>Wikilimination - Playing</title>
+        <title>Guess What? - Playing</title>
     </head>
 
     <body>
@@ -19,13 +19,20 @@
         </div>
 
         <div id="load" class="d-none">
-            <h1>Fetching articles...</h1>
+            <h1>Generating images...</h1>
+            <h2>
+                <span id="loading">??</span>
+                /
+                <span id="toLoad">20</span>
+            </h2>
+            <img class="rounded-circle" id="newlyGenerated" width="100" />
+            <p id="newName" />
         </div>
 
         <div id="game" class="d-none">
             <div>
                 <div id="myArticle">
-                    <a target="_blank"></a>
+                    <span></span>
                     <button id="toggleArticle" onclick="toggleArticle()"><img></button>
                 </div>
 

@@ -1,5 +1,18 @@
+const fs = require('fs');
+const { pipeline } = require('stream');
+const { promisify } = require('util');
 const fetch = require('node-fetch');
-const numOfArticles = 20;
+
+const names = require('./names.js');
+const numOfPics = 20;
+const timeBetweenFetches = 1000;
+
+const imageURLs = [
+    'https://thispersondoesnotexist.com/image',
+    'https://thiscatdoesnotexist.com/',
+    'https://thishorsedoesnotexist.com/',
+    'https://thisartworkdoesnotexist.com/',
+];
 
 const lengthSort = (a, b) => {
     if (a.length > b.length) return -1;
@@ -24,8 +37,12 @@ function shuffleArray(array) {
 }
 
 class Game {
-    constructor(code) {
+    constructor(code, type) {
         this.code = code;
+        this.type = type;
+        this.imgPath = `/people/${code}${Date.now()}/`;
+        this.localImgPath = `./public${this.imgPath}`;
+        fs.mkdirSync(this.localImgPath); //create directory for images
         this.players = [null, null];
         this.started = false;
     }
@@ -64,28 +81,36 @@ class Game {
     gameInfo(place) {
         return {
             place,
-            articles: this.articles,
-            article: this.playerArticles[place],
+            names: this.names,
+            imgPath: this.imgPath,
+            myImage: this.playerImages[place],
             flipped: this.flipped,
             code: this.code,
         };
     }
 
     async start() {
-        this.emit('loading');
+        this.emit('loading', 0, null, null);
         this.started = true;
 
-        //get articles
-        this.articles = await fetch('https://en.wikipedia.org/w/api.php?format=json&action=query&generator=random&grnnamespace=0&prop=info&grnlimit=200');
-        this.articles = Object.values((await this.articles.json()).query.pages);
-        this.articles.sort(titleLengthSort);
-        this.articles = this.articles.slice(80); //remove the 80 articles with the longest titles
-        this.articles.sort(lengthSort);
-        this.articles = this.articles.slice(0, numOfArticles);
-        this.articles = this.articles.map(a => ({id: a.pageid, title: a.title}));
-        shuffleArray(this.articles);
-        this.playerArticles = [0,0].map(e=>Math.floor(Math.random() * this.articles.length)); //select a random article for each player
-        this.flipped = [0,0].map(e=>Array(this.articles.length).fill(false));
+        //generate names
+        this.names = shuffleArray(names).slice(0, numOfPics);
+
+        //get images
+        for (let i = 0; i < numOfPics; i++) {
+            const streamPipeline = promisify(pipeline);
+            let response = await fetch(imageURLs[this.type]);
+            if (!response.ok) {
+                this.emit('loading', 'ERROR', null, null);
+                return;
+            };
+            await streamPipeline(response.body, fs.createWriteStream(`${this.localImgPath}${i}.jpg`)); //save image
+            this.emit('loading', i+1, `${this.imgPath}${i}.jpg`, this.names[i]);
+            await new Promise(res => setTimeout(res, timeBetweenFetches));
+        }
+
+        this.playerImages = [0,0].map(e=>Math.floor(Math.random() * numOfPics)); //select a random article for each player
+        this.flipped = [0,0].map(e=>Array(numOfPics).fill(false));
 
         //tell clients
         for (let socket of this.connected) {
