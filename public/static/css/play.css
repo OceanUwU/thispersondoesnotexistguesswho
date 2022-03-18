@@ -1,0 +1,95 @@
+html, body {
+    width: 100%;
+    height: 100%;
+}
+
+#wait {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#load {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#game {
+    width: 100%;
+    height: 100%;
+}
+
+#game > div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#myArticle {
+    line-height: 0;
+    border-bottom: 1px solid black;
+    width: 100%;
+    background: #bef5ff;
+}
+
+#myArticle > a {
+    line-height: normal;
+    color: black;
+}
+
+#toggleArticle {
+    float: right;
+    padding: 5px;
+    background-color: lightgrey;
+    border: none;
+    border-top: 1px solid black;
+    border-left: 1px solid black;
+    margin-top: -1px;
+}
+
+table {
+    margin-top: 10px;
+}
+
+td {
+    border: 1px solid black;
+}
+
+#ownBoard td {
+    height: 16vh;
+    width: 18vw;
+    max-width: 20vw;
+}
+
+#opponentBoard td {
+    height: 4vh;
+    width: 4vh;
+}
+
+table td > div {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+table td > div > a {
+    text-align: center;
+    color: #05004d;
+}
+
+.unflipped {
+    background: #dae7ff;
+}
+
+.flipped {
+    background: grey;
+}
